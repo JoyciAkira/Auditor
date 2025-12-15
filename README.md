@@ -48,12 +48,22 @@ Questo progetto combina tecnologie open-source per creare un sistema di auditing
 
 ### 1. Setup Iniziale
 ```bash
+# Clona il repository
+git clone https://github.com/JoyciAkira/Auditor.git
+cd Auditor
+
+# Installa dipendenze
+pip install -r requirements.txt
+
+# Setup automatico
+python setup.py
+
 # Installa claude-hook-comms
 pip install hcom
 hcom
 
 # Configura hooks per Claude Code
-# (segui istruzioni in claude-hook-comms)
+# (segui istruzioni in docs/quick_start.md)
 ```
 
 ### 2. Avvia l'Auditor

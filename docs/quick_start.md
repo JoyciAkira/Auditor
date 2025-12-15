@@ -12,10 +12,9 @@ Guida rapida per configurare e utilizzare l'Auditor Agent con Claude Code.
 
 ### 1. Setup Ambiente
 ```bash
-# Clona il progetto
-cd /Volumes/Partition_1/Auditor
-git clone <repository-url> auditor-concept
-cd auditor-concept
+# Clona il repository pubblico
+git clone https://github.com/JoyciAkira/Auditor.git
+cd Auditor
 
 # Esegui setup automatico
 python setup.py
