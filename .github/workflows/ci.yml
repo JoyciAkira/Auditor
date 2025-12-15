@@ -1,0 +1,124 @@
+name: CI
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.8, 3.9, 3.10, 3.11, 3.12]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Lint with Black
+      run: |
+        black --check --diff .
+
+    - name: Type check with mypy
+      run: |
+        mypy auditor_agent/ communication_layer/ audit_engine/ config/ monitoring/
+
+    - name: Run basic tests
+      run: |
+        python test_auditor.py
+
+    - name: Run full system tests
+      run: |
+        python test_full_system.py
+
+    - name: Test setup script
+      run: |
+        python setup.py --help || true  # Test help, ignore if dependencies missing
+
+  security:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Run Bandit security linter
+      run: |
+        pip install bandit
+        bandit -r auditor_agent/ communication_layer/ audit_engine/ -f json -o bandit-report.json || true
+        cat bandit-report.json
+
+    - name: Upload security report
+      uses: actions/upload-artifact@v4
+      with:
+        name: security-report
+        path: bandit-report.json
+
+  performance:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Run performance tests
+      run: |
+        python -c "
+        import time
+        from audit_engine.auditor import AuditorEngine
+        from config.agent_config import AgentConfig
+
+        # Test performance
+        config = AgentConfig()
+        engine = AuditorEngine(config)
+        engine.start()
+
+        # Genera 1000 eventi di test
+        events = []
+        for i in range(1000):
+            events.append({
+                'type': 'tool',
+                'tool_name': 'FileEdit',
+                'tool_input': {
+                    'file_path': f'test_{i}.py',
+                    'old_string': '',
+                    'new_string': f'API_KEY = \"sk-{i}\"'
+                }
+            })
+
+        start = time.time()
+        problems = 0
+        for event in events:
+            if engine.analyze_event(event):
+                problems += 1
+
+        duration = time.time() - start
+        throughput = len(events) / duration
+
+        print(f'Performance: {throughput:.1f} events/sec, {problems} problems found')
+        print(f'Time: {duration:.2f}s for {len(events)} events')
+
+        engine.stop()
+
+        # Assert performance minima
+        assert throughput > 100, f'Performance too low: {throughput} events/sec'
+        "

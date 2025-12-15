@@ -12,6 +12,7 @@ rich>=13.0                   # Terminal UI and formatting
 
 # Development and testing
 pytest>=7.0                  # Testing framework
+pytest-mock>=3.10.0          # Mock utilities for testing
 black>=23.0                  # Code formatting
 mypy>=1.0                    # Type checking
 

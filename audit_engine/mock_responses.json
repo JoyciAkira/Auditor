@@ -1,0 +1,17 @@
+{
+  "security_analysis": "Analisi di sicurezza del codice:\n\nLIVELLO RISCHIO: HIGH\n\nProblemi identificati:\n1. Possibile SQL injection nella query dinamica\n2. Mancanza di sanitizzazione input utente\n3. Esposizione di informazioni sensibili nei log\n\nSuggerimenti:\n- Usa prepared statements per query SQL\n- Implementa input validation lato server\n- Rimuovi dati sensibili dai log di errore",
+
+  "code_quality": "Analisi qualità codice:\n\nLIVELLO QUALITÀ: MEDIUM\n\nAspetti positivi:\n- Buona struttura generale\n- Commenti adeguati\n\nMiglioramenti suggeriti:\n- Ridurre complessità funzioni (max 20 righe)\n- Aggiungere test unitari per funzioni critiche\n- Migliorare gestione errori con eccezioni specifiche",
+
+  "hardcoded_secret": "Rilevato hardcoded secret:\n\nLIVELLO RISCHIO: CRITICAL\n\nIl codice contiene credenziali hardcodate che rappresentano un rischio di sicurezza grave. Le chiavi API e password dovrebbero essere gestite tramite variabili d'ambiente o sistemi di secret management.",
+
+  "dangerous_command": "Comando shell potenzialmente pericoloso rilevato:\n\nLIVELLO RISCHIO: HIGH\n\nIl comando 'rm -rf /' può causare perdita irreversibile di dati. Suggerisco di:\n- Aggiungere controlli di sicurezza\n- Richiedere conferma esplicita\n- Usare percorsi relativi invece di assoluti",
+
+  "sql_injection": "Rilevata potenziale SQL injection:\n\nLIVELLO RISCHIO: HIGH\n\nLa concatenazione diretta di stringhe in query SQL è vulnerabile. Usa sempre prepared statements o ORM per prevenire injection attacks.",
+
+  "large_function": "Funzione eccessivamente complessa rilevata:\n\nLIVELLO QUALITÀ: MEDIUM\n\nFunzioni con più di 50 righe diventano difficili da testare e mantenere. Considera di suddividere la logica in funzioni più piccole e focalizzate.",
+
+  "missing_tests": "Commit senza riferimenti a test:\n\nLIVELLO QUALITÀ: LOW\n\nI commit dovrebbero idealmente includere test per le funzionalità aggiunte/modificate. Considera di aggiungere test unitari o di integrazione.",
+
+  "fallback": "Analisi completata:\n\nLIVELLO RISCHIO: LOW\n\nIl codice analizzato non presenta problemi evidenti di sicurezza o qualità. Continua a monitorare le best practices di sviluppo."
+}
