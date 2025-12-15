@@ -19,6 +19,7 @@ from typing import Iterable, Optional
 
 
 REPO_ROOT_ENV = "AUDITOR_REPO_ROOT"
+BOOTSTRAP_MAX_COMMITS_ENV = "AUDITOR_PRE_PUSH_BOOTSTRAP_MAX_COMMITS"
 
 
 @dataclass(frozen=True)
@@ -48,6 +49,25 @@ def _repo_root() -> Path:
     # Git is authoritative for root resolution.
     cp = _run_git(["rev-parse", "--show-toplevel"], cwd=Path.cwd())
     return Path(cp.stdout.strip()).resolve()
+
+
+def _safe_repo_path(repo_root: Path, rel_path: str) -> Optional[Path]:
+    """
+    Convert a repo-relative path into an absolute path under repo_root.
+
+    Security: reject paths that escape repo_root.
+    """
+    try:
+        abs_path = (repo_root / rel_path).resolve()
+        abs_path.relative_to(repo_root.resolve())
+        return abs_path
+    except Exception:
+        return None
+
+
+def _is_text_file_bytes(buf: bytes) -> bool:
+    # Heuristic: NUL bytes => binary-ish.
+    return b"\x00" not in buf
 
 
 def _load_engine(config_path: Optional[Path]):
@@ -176,12 +196,17 @@ def _analyze_pre_push(engine, repo_root: Path, stdin: str, max_chars_per_commit:
     for remote_sha, local_sha in _parse_pre_push_ranges(stdin):
         if local_sha == "0" * 40:
             continue
-        if remote_sha == "0" * 40:
-            rev_range = local_sha
+        is_bootstrap = remote_sha == "0" * 40
+        if is_bootstrap:
+            # Incremental adoption: on an empty remote, limit analysis to last N commits.
+            max_commits = int(os.environ.get(BOOTSTRAP_MAX_COMMITS_ENV, "50"))
+            cp = _run_git(["rev-list", f"--max-count={max_commits}", local_sha], cwd=repo_root)
+            shas = [s for s in cp.stdout.splitlines() if s.strip()]
         else:
             rev_range = f"{remote_sha}..{local_sha}"
+            shas = _rev_list(repo_root, rev_range)
 
-        for sha in _rev_list(repo_root, rev_range):
+        for sha in shas:
             patch = _commit_patch(repo_root, sha, max_chars_per_commit)
             event = {
                 "type": "tool",
@@ -229,7 +254,7 @@ def main(argv: list[str]) -> int:
         "--config",
         type=str,
         default=None,
-        help="Path config YAML (default: auditor-concept/config/agent_config.yaml)",
+        help="Path config YAML (default: config/agent_config.yaml)",
     )
     ap.add_argument(
         "--max-chars-per-file",
@@ -257,11 +282,26 @@ def main(argv: list[str]) -> int:
     p_ci = sub.add_parser("ci")
     p_ci.add_argument("--range", type=str, required=True, help="Git revision range, e.g. A...B or A..B")
 
+    sub.add_parser("install-hooks")
+
     args = ap.parse_args(argv)
 
     repo_root = _repo_root()
     default_cfg = repo_root / "config" / "agent_config.yaml"
     config_path = Path(args.config).resolve() if args.config else default_cfg
+
+    if args.cmd == "install-hooks":
+        hooks_dir = repo_root / ".githooks"
+        if not hooks_dir.exists():
+            sys.stderr.write(f"[auditor-gate] hooks directory not found: {hooks_dir}\n")
+            return 2
+        _run_git(["config", "core.hooksPath", ".githooks"], cwd=repo_root)
+        for name in ["pre-commit", "commit-msg", "pre-push"]:
+            hp = hooks_dir / name
+            if hp.exists():
+                hp.chmod(0o755)
+        sys.stderr.write("[auditor-gate] hooks installed (core.hooksPath=.githooks)\n")
+        return 0
 
     if not config_path.exists():
         sys.stderr.write(f"[auditor-gate] config not found: {config_path}\n")
@@ -282,8 +322,18 @@ def main(argv: list[str]) -> int:
             violations = []
             for p in paths:
                 try:
-                    content = (repo_root / p).read_text(encoding="utf-8", errors="replace")
-                except OSError:
+                    abs_p = _safe_repo_path(repo_root, p)
+                    if abs_p is None:
+                        sys.stderr.write(f"[auditor-gate] SKIP unsafe path: {p}\n")
+                        continue
+                    buf = abs_p.read_bytes()
+                    if not _is_text_file_bytes(buf):
+                        sys.stderr.write(f"[auditor-gate] SKIP non-text file: {p}\n")
+                        continue
+                    content = buf.decode("utf-8", errors="replace")
+                except OSError as e:
+                    sys.stderr.write(f"[auditor-gate] SKIP unreadable file: {p}\n")
+                    sys.stderr.write(_limit_text(str(e), 500) + "\n")
                     continue
                 event = {
                     "type": "tool",
