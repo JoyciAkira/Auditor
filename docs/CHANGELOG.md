@@ -29,4 +29,11 @@ Questo file registra modifiche significative al concept, con focus su riproducib
 ### Documentazione
 - Aggiornati `README.md` e `docs/quick_start.md` per riflettere lo stato reale: implementato vs parziale vs non implementato.
 
+### 🤖 AI Integration (Ollama/CodeGeeX)
+- **Implementato**: Client Ollama completo con timeout configurabili
+- **Testato**: Connessione funzionante a `192.168.1.251:11434` (tuo NAS)
+- **Validato**: CodeGeeX 9B risponde (~33s con prompt vincolato)
+- **Cold-start handling**: Timeout 180s+ per modello 9B su hardware NAS
+- **Architettura**: Sistema ibrido (pattern matching veloce → AI profonda per casi complessi)
+
 

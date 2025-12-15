@@ -79,14 +79,27 @@ hcom
 
 ### 1.5 Setup Ollama per AI Analysis (Opzionale)
 ```bash
-# Se hai Ollama/CodeGeeX sul NAS, configura:
+# 1. Verifica permessi Docker sul NAS
+sudo docker ps | grep ollama  # Se non funziona: sudo usermod -aG docker $USER && reboot
+
+# 2. Test Ollama (sul NAS)
+curl -s http://localhost:11434/api/tags  # Dovrebbe mostrare i modelli
+
+# 3. Test risposta rapida
+time curl -s http://localhost:11434/api/chat \\
+  -H 'Content-Type: application/json' \\
+  -d '{"model":"codegeex4:latest","messages":[{"role":"user","content":"OK"}],"stream":false,"options":{"temperature":0.0,"num_predict":5}}' \\
+  --max-time 240
+
+# 4. Se risponde, configura l'Auditor:
 # Modifica config/agent_config.yaml:
 ai:
   enable_ai: true
   ollama_url: "http://TUO_NAS_IP:11434"  # IP del tuo container Ollama
-  ollama_model: "codegeex"
+  ollama_model: "codegeex4:latest"
+  ai_timeout: 180  # Timeout per cold-start 9B model
 
-# Test connessione AI
+# 5. Test connessione AI
 python test_ai_integration.py
 ```
 
