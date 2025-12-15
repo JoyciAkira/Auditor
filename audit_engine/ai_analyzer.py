@@ -12,9 +12,10 @@ from .models.audit_result import AuditResult
 class AIAnalyzer:
     """Analyzer che usa LLM per analisi intelligente del codice."""
 
-    def __init__(self, ollama_url: str = "http://localhost:11434", model: str = "codegeex"):
+    def __init__(self, ollama_url: str = "http://localhost:11434", model: str = "codegeex", timeout_seconds: int = 30, temperature: float = 0.1):
         """Inizializza analyzer con Ollama client."""
-        self.client = OllamaClient(ollama_url, model)
+        self.client = OllamaClient(ollama_url, model, timeout_seconds=timeout_seconds)
+        self.temperature = float(temperature)
 
     def test_connection(self) -> bool:
         """Test connessione al LLM."""

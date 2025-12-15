@@ -49,6 +49,6 @@ integrations:
 ai:
   enable_ai: false                   # Abilita analisi con LLM reale
   ollama_url: "http://localhost:11434"  # URL Ollama (modifica per NAS)
-  ollama_model: "codegeex"           # Modello LLM da usare
-  ai_timeout: 30                     # Timeout per chiamate AI (secondi)
+  ollama_model: "codegeex4:latest"   # Modello LLM da usare (nel tuo NAS è presente codegeex4:latest)
+  ai_timeout: 180                    # Timeout per chiamate AI (secondi). Cold-start di modelli 9B può superare 30s.
   ai_temperature: 0.1                # Temperature per risposte AI (0.0-1.0)

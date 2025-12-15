@@ -40,7 +40,9 @@ class AuditorEngine:
             try:
                 ollama_url = getattr(config, 'ollama_url', 'http://localhost:11434')
                 ollama_model = getattr(config, 'ollama_model', 'codegeex')
-                self.ai_analyzer = AIAnalyzer(ollama_url, ollama_model)
+                ai_timeout = int(getattr(config, 'ai_timeout', 30))
+                ai_temperature = float(getattr(config, 'ai_temperature', 0.1))
+                self.ai_analyzer = AIAnalyzer(ollama_url, ollama_model, timeout_seconds=ai_timeout, temperature=ai_temperature)
                 print(f"🤖 AI Analyzer inizializzato: {ollama_model} @ {ollama_url}")
             except Exception as e:
                 print(f"⚠️  AI Analyzer non disponibile: {e}")

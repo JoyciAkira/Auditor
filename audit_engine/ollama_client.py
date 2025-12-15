@@ -23,16 +23,17 @@ class OllamaResponse:
 class OllamaClient:
     """Client per comunicare con Ollama API."""
 
-    def __init__(self, base_url: str = "http://localhost:11434", model: str = "codegeex"):
+    def __init__(self, base_url: str = "http://localhost:11434", model: str = "codegeex", timeout_seconds: int = 30):
         """Inizializza client Ollama.
 
         Args:
             base_url: URL base dell'API Ollama (default: localhost:11434)
             model: Nome del modello da usare (default: codegeex)
+            timeout_seconds: Timeout HTTP per /api/chat (include cold start e generation)
         """
         self.base_url = base_url.rstrip('/')
         self.model = model
-        self.timeout = 30  # secondi
+        self.timeout = int(timeout_seconds)  # secondi
 
     def test_connection(self) -> bool:
         """Test connessione a Ollama."""
