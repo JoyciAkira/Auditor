@@ -9,6 +9,11 @@ Questo file registra modifiche significative al concept, con focus su riproducib
 - **Push iniziale**: codice e documentazione completamente funzionanti
 - **Aggiornamento docs**: istruzioni clone corrette per repository pubblico
 
+### ⚠️ **Correzione Status: Pattern-Based (Non AI)**
+- **Precisazione**: il sistema attuale è "linting tool avanzato" con pattern matching statico
+- **Limite identificato**: manca LLM integration per ragionamento semantico e analisi intelligente
+- **Documentazione aggiornata**: chiarito che serve LLM per diventare "AI Auditor" completo
+
 ### Fix / Coerenza contratti
 - Corretto `test_auditor.py`: rimosso `SyntaxError` e ripristinata esecuzione test.
 - Allineato `communication_layer/hcom_client.py` al contratto reale di `hcom`:

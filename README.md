@@ -20,8 +20,20 @@ Un agente di auditing intelligente che monitora e valida le azioni di Claude Cod
 Questo progetto combina tecnologie open-source per creare un sistema di auditing multi-agente che lavora in parallelo con Claude Code:
 
 - **Comunicazione**: `hcom` (repo `aannoo/claude-hook-comms`) per eventi/trascritti/messaging
-- **Auditing Engine (attuale)**: regole locali + controlli base
-- **Roadmap**: innesto di scanner/policy engine MIT/Apache-2.0 (vedi sezione “Miglioramenti”)
+- **Auditing Engine (attuale)**: regole locali + controlli base (pattern matching statico)
+- **Roadmap**: innesto di scanner/policy engine MIT/Apache-2.0 + LLM integration
+
+### ⚠️ **Limite Critico Attuale**
+
+**Il sistema attuale NON è un "AI Auditor" completo**. È un "linting tool avanzato" che fa:
+
+- ✅ Pattern matching statico (regex su hardcoded secrets, comandi pericolosi)
+- ✅ Regole YAML configurabili
+- ✅ Integrazione con Claude Code via hcom
+- ❌ **NON** ragionamento semantico o analisi intelligente
+- ❌ **NON** LLM per valutazione impatto e suggerimenti
+
+**Per diventare un vero "AI Auditor" serve aggiungere LLM integration** (OpenAI GPT/Claude/etc.) per analisi intelligente del codice e contesto.
 
 ## 🏗️ Architettura
 
@@ -185,8 +197,59 @@ L'agente si integra perfettamente con Claude Code attraverso:
 3. **Message passing**: Può inviare suggerimenti e avvisi
 4. **Transcript access**: Legge conversazioni per context awareness
 
+## 🤖 Aggiungere LLM Integration (per diventare "AI Auditor")
+
+Per trasformare questo da "linting tool" a "AI Auditor" vero, aggiungere:
+
+### 1. Dipendenze LLM
+```bash
+pip install openai anthropic  # O altri provider
+```
+
+### 2. Configurazione
+```yaml
+# config/agent_config.yaml
+llm:
+  provider: "openai"  # openai, anthropic, local
+  model: "gpt-4"
+  api_key: "${OPENAI_API_KEY}"
+  temperature: 0.1
+  max_tokens: 1000
+```
+
+### 3. Engine AI
+```python
+# audit_engine/ai_analyzer.py
+import openai
+
+class AIAnalyzer:
+    def analyze_code_change(self, code_diff: str, context: dict) -> dict:
+        """Analizza cambiamenti codice con LLM per impatto/risk assessment"""
+        prompt = f"""
+        Analizza questo cambiamento codice per rischi di sicurezza e qualità:
+
+        {code_diff}
+
+        Contesto: {context}
+
+        Fornisci:
+        - Livello di rischio (low/medium/high)
+        - Problemi potenziali
+        - Suggerimenti miglioramento
+        """
+
+        response = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.1
+        )
+
+        return self.parse_llm_response(response)
+```
+
 ## 🚀 Estensioni Future
 
+- **LLM Integration** (vedi sopra) per analisi intelligente
 - Integrazione con git hooks per validazione pre-commit
 - Dashboard web per monitoraggio real-time
 - Plugin system per regole custom
