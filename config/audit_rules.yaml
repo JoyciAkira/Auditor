@@ -1,0 +1,83 @@
+# Regole di Auditing per Auditor Agent
+# Organizzate per categoria: security, quality, compliance
+
+security:
+  - name: "hardcoded_secrets"
+    pattern: "(?i)(password|secret|key|token|api_key).*?['\"]([^'\"]{8,})['\"]"
+    severity: "high"
+    action: "block"
+    description: "Possibili segreti o credenziali hardcodate nel codice"
+
+  - name: "dangerous_commands"
+    pattern: "(rm\\s+-rf\\s+/|curl.*\\|\\s*bash|wget.*\\|\\s*sh|chmod\\s+777)"
+    severity: "high"
+    action: "block"
+    description: "Comandi shell potenzialmente distruttivi o insicuri"
+
+  - name: "sql_injection_risk"
+    pattern: "(execute\\(.*\\+.*\\)|cursor\\.execute\\(.*%.*\\)|raw.*sql)"
+    severity: "high"
+    action: "warn"
+    description: "Possibili vulnerabilità SQL injection"
+
+  - name: "excessive_permissions"
+    pattern: "chmod\\s+777|chown.*root"
+    severity: "medium"
+    action: "warn"
+    description: "Permessi file eccessivamente permissivi"
+
+quality:
+  - name: "large_functions"
+    max_lines: 50
+    severity: "medium"
+    action: "suggest"
+    description: "Funzioni troppo lunghe che potrebbero essere suddivise"
+
+  - name: "missing_error_handling"
+    pattern: "(open|connect|execute)\\s*\\("
+    severity: "low"
+    action: "suggest"
+    description: "Operazioni I/O senza gestione errori esplicita"
+
+  - name: "unused_imports"
+    pattern: "^\\s*(import|from).*"
+    severity: "low"
+    action: "suggest"
+    description: "Possibili import non utilizzati"
+
+compliance:
+  - name: "missing_tests"
+    require_tests: true
+    severity: "medium"
+    action: "suggest"
+    description: "Modifiche codice senza test corrispondenti"
+
+  - name: "commit_without_tests"
+    pattern: "(?i)commit.*(?!(test|spec))"
+    severity: "low"
+    action: "suggest"
+    description: "Commit che non menziona test"
+
+  - name: "large_commits"
+    severity: "low"
+    action: "suggest"
+    description: "Commit con molte modifiche (possibile mancanza di atomicità)"
+
+workflow:
+  - name: "critical_operations"
+    pattern: "(git push|docker push|npm publish|pip upload|deploy)"
+    severity: "high"
+    action: "warn"
+    description: "Operazioni critiche che richiedono attenzione"
+
+  - name: "database_migrations"
+    pattern: "(migrate|migration|schema.*change)"
+    severity: "medium"
+    action: "warn"
+    description: "Possibili migrazioni database che richiedono backup"
+
+  - name: "config_changes"
+    pattern: "(config|settings|env).*change"
+    severity: "medium"
+    action: "suggest"
+    description: "Modifiche alla configurazione che potrebbero richiedere test"

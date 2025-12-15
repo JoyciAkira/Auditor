@@ -1,0 +1,46 @@
+# Configurazione Auditor Agent
+agent:
+  name: "auditor"                    # Nome dell'agente nel sistema hcom
+  mode: "warn"                       # readonly, warn, block
+  target_instance: null              # Istanza specifica da monitorare (null = tutte)
+  enable_dashboard: true             # Abilita dashboard di monitoraggio
+  verbose: false                     # Output verboso
+
+communication:
+  hcom_timeout: 30                   # Timeout per comandi hcom (secondi)
+  poll_interval: 0.1                 # Intervallo polling eventi (secondi)
+  max_retry_attempts: 3              # Tentativi retry connessione
+
+auditing:
+  rules_path: "config/audit_rules.yaml"  # Path alle regole di auditing
+  enable_security_checks: true       # Abilita controlli sicurezza
+  enable_quality_checks: true        # Abilita controlli qualità
+  enable_compliance_checks: true     # Abilita controlli compliance
+  max_file_size_kb: 1024             # Dimensione max file da analizzare (KB)
+
+alerts:
+  enable_desktop_notifications: true # Notifiche desktop
+  enable_sound_alerts: false         # Avvisi sonori
+  log_file: "logs/auditor.log"       # File di log
+  max_log_size_mb: 10                # Dimensione max log (MB)
+  log_rotation: 5                    # Numero file log rotazione
+
+monitoring:
+  dashboard_port: 8080               # Porta dashboard web
+  enable_metrics: true               # Raccolta metriche
+  metrics_retention_days: 7          # Giorni retention metriche
+  alert_thresholds:
+    high_severity_rate: 0.1          # Soglia alert problemi high severity
+    false_positive_rate: 0.05        # Soglia alert falsi positivi
+
+performance:
+  max_concurrent_analyses: 5         # Analisi concorrenti max
+  analysis_timeout: 10               # Timeout singola analisi (secondi)
+  cache_enabled: true                # Cache risultati
+  cache_ttl_seconds: 300             # TTL cache (secondi)
+
+integrations:
+  github_token: null                 # Token GitHub per analisi repo
+  openai_api_key: null               # API key OpenAI per analisi avanzate
+  slack_webhook: null                # Webhook Slack per notifiche
+  discord_webhook: null              # Webhook Discord per notifiche

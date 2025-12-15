@@ -1,0 +1,19 @@
+# Auditor Agent Requirements
+# Installa con: pip install -r requirements.txt
+
+# Core dependencies
+hcom>=0.6.0                  # claude-hook-comms (package name su PyPI)
+pyyaml>=6.0                  # YAML configuration files
+rich>=13.0                   # Terminal UI and formatting
+
+# Optional AI features (commenta se non necessari)
+# openai>=1.0                 # OpenAI integration
+# anthropic>=0.7              # Anthropic Claude API
+
+# Development and testing
+pytest>=7.0                  # Testing framework
+black>=23.0                  # Code formatting
+mypy>=1.0                    # Type checking
+
+# Additional utilities
+requests>=2.31               # HTTP requests
