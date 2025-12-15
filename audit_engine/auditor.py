@@ -10,6 +10,7 @@ from typing import Dict, List, Optional, Any
 from pathlib import Path
 from dataclasses import dataclass
 from .ai_analyzer import AIAnalyzer
+from .models.audit_result import AuditResult
 
 
 @dataclass
@@ -22,18 +23,6 @@ class AuditRule:
     description: str = ""
     max_lines: Optional[int] = None
     require_tests: bool = False
-
-
-@dataclass
-class AuditResult:
-    """Risultato di un'analisi di audit."""
-    rule_name: str
-    severity: str
-    action: str
-    description: str
-    location: Optional[str] = None
-    suggestion: Optional[str] = None
-    evidence: Optional[str] = None
 
 
 class AuditorEngine:

@@ -14,6 +14,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from audit_engine.ollama_client import OllamaClient
 from audit_engine.ai_analyzer import AIAnalyzer
 from audit_engine.auditor import AuditorEngine
+from audit_engine.models.audit_result import AuditResult
 from config.agent_config import AgentConfig
 
 
@@ -31,7 +32,8 @@ class TestAIIntegration:
         print(f"🧪 Test Connessione Ollama: {self.ollama_url}")
 
         if not self.client.test_connection():
-            print("❌ Ollama non disponibile. Test saltato."            print("💡 Assicurati che Ollama sia running e CodeGeeX scaricato:")
+            print("❌ Ollama non disponibile. Test saltato.")
+            print("💡 Assicurati che Ollama sia running e CodeGeeX scaricato:")
             print(f"   docker exec -it <ollama-container> ollama pull {self.model}")
             return False
 
@@ -82,7 +84,8 @@ class TestAIIntegration:
             if result:
                 print(f"   ✅ Rilevato: {result.rule_name} ({result.severity})")
                 print(f"   💡 Suggerimento: {result.suggestion[:100]}...")
-                print(".2f"                success = result.severity in ["high", "critical"] if test_case["expected_risk"] in ["high", "critical"] else result.severity == "low"
+                print(f"   ⏱️  Tempo: {end_time - start_time:.2f}s")
+                success = result.severity in ["high", "critical"] if test_case["expected_risk"] in ["high", "critical"] else result.severity == "low"
             else:
                 print("   ⚪ Nessun problema rilevato")
                 success = test_case["expected_risk"] == "low"
@@ -198,13 +201,15 @@ def complex_function():
             result = analyzer.analyze_event(event)
             end = time.time()
             times.append(end - start)
-            print(".2f"            if result:
+            print(f"   ⏱️  Analisi {i+1}: {end - start:.2f}s")
+            if result:
                 print(f"   ✅ Analisi {i+1} completata")
             else:
                 print(f"   ⚠️  Analisi {i+1} senza risultato")
 
         avg_time = sum(times) / len(times)
-        print(".2f"        print(f"   📈 Min: {min(times):.2f}s, Max: {max(times):.2f}s")
+        print(".2f")
+        print(f"   📈 Min: {min(times):.2f}s, Max: {max(times):.2f}s")
 
         # AI dovrebbe essere ragionevolmente veloce (< 10s media)
         return avg_time < 10.0

@@ -12,7 +12,8 @@ from pathlib import Path
 # Aggiungi il path del progetto
 sys.path.insert(0, str(Path(__file__).parent))
 
-from audit_engine.auditor import AuditorEngine, AuditResult
+from audit_engine.auditor import AuditorEngine
+from audit_engine.models.audit_result import AuditResult
 from config.agent_config import AgentConfig
 
 

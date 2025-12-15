@@ -6,7 +6,7 @@ Integra Ollama/CodeGeeX per andare oltre il pattern matching.
 import json
 from typing import Dict, Optional, Any
 from .ollama_client import OllamaClient
-from .auditor import AuditResult
+from .models.audit_result import AuditResult
 
 
 class AIAnalyzer:
