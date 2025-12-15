@@ -4,6 +4,11 @@ Questo file registra modifiche significative al concept, con focus su riproducib
 
 ## 2025-12-15
 
+### Repository Pubblico 🚀
+- **Creato repository GitHub pubblico**: https://github.com/JoyciAkira/Auditor
+- **Push iniziale**: codice e documentazione completamente funzionanti
+- **Aggiornamento docs**: istruzioni clone corrette per repository pubblico
+
 ### Fix / Coerenza contratti
 - Corretto `test_auditor.py`: rimosso `SyntaxError` e ripristinata esecuzione test.
 - Allineato `communication_layer/hcom_client.py` al contratto reale di `hcom`:
