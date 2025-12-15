@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(git rev-parse --show-toplevel)"
+COMMIT_MSG_FILE="${1:-}"
+if [[ -z "$COMMIT_MSG_FILE" ]]; then
+  echo "[auditor-gate] commit-msg hook requires commit message file path" >&2
+  exit 2
+fi
+
+exec python3 "$ROOT/auditor_gate.py" commit-msg "$COMMIT_MSG_FILE"
+
+

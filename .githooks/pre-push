@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(git rev-parse --show-toplevel)"
+REMOTE_NAME="${1:-}"
+REMOTE_URL="${2:-}"
+
+exec python3 "$ROOT/auditor_gate.py" pre-push --remote-name "$REMOTE_NAME" --remote-url "$REMOTE_URL"
+
+

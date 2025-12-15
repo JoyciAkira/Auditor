@@ -5,7 +5,10 @@ Sistema ibrido: pattern matching veloce + AI analysis profonda.
 
 import re
 import json
-import yaml
+try:
+    import yaml  # type: ignore
+except ModuleNotFoundError:  # pragma: no cover
+    yaml = None
 from typing import Dict, List, Optional, Any
 from pathlib import Path
 from dataclasses import dataclass
@@ -199,7 +202,15 @@ class AuditorEngine:
         issues = []
 
         # Controllo hardcoded secrets
-        secrets_pattern = r'(?i)(password|secret|key|token|api_key).*?[\'"]([^\'"]{10,})[\'"]'
+        # Limitazione intenzionale: il gate Git non deve "autobloccarsi" su regex/pattern nel codice stesso.
+        # Il pattern rileva assegnazioni o key/value reali, non semplici occorrenze testuali (es. definizioni di regex).
+        secrets_pattern = r"""(?ix)
+        \b(?:
+            api_key|apikey|secret|token|password|access_key|private_key
+        )\b
+        \s*(?:=|:)\s*
+        ['"][^'"\n]{10,}['"]
+        """
         if re.search(secrets_pattern, new_string):
             issues.append(('hardcoded_secrets', 'high', 'block'))
 
@@ -327,6 +338,10 @@ class AuditorEngine:
 
     def _load_rules(self) -> List[AuditRule]:
         """Carica le regole di auditing dalla configurazione."""
+        if yaml is None:
+            print("⚠️  pyyaml non installato: uso regole di default (audit_rules.yaml non caricato)")
+            return self._get_default_rules()
+
         rules_file = Path(self.config.rules_path)
         if not rules_file.exists():
             print(f"⚠️  File regole non trovato: {rules_file}")

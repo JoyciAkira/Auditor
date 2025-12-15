@@ -13,7 +13,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Optional
 
-import yaml
+try:
+    import yaml  # type: ignore
+except ModuleNotFoundError:  # pragma: no cover
+    yaml = None
 
 
 @dataclass
@@ -39,6 +42,12 @@ class AgentConfig:
     def from_file(cls, config_path: str | Path | None) -> "AgentConfig":
         if not config_path:
             return cls()
+
+        if yaml is None:
+            raise RuntimeError(
+                "pyyaml non installato: impossibile caricare config YAML. "
+                "Installa le dipendenze (pip install -r requirements.txt) oppure avvia senza config."
+            )
 
         path = Path(config_path)
         if not path.exists():
