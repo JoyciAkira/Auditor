@@ -23,17 +23,16 @@ Questo progetto combina tecnologie open-source per creare un sistema di auditing
 - **Auditing Engine (attuale)**: regole locali + controlli base (pattern matching statico)
 - **Roadmap**: innesto di scanner/policy engine MIT/Apache-2.0 + LLM integration
 
-### ⚠️ **Limite Critico Attuale**
+### 🚀 **Nuovo: Integrazione AI con Ollama/CodeGeeX**
 
-**Il sistema attuale NON è un "AI Auditor" completo**. È un "linting tool avanzato" che fa:
+**Il sistema supporta ora analisi AI reale!** Oltre al pattern matching statico, puoi abilitare:
 
-- ✅ Pattern matching statico (regex su hardcoded secrets, comandi pericolosi)
-- ✅ Regole YAML configurabili
-- ✅ Integrazione con Claude Code via hcom
-- ❌ **NON** ragionamento semantico o analisi intelligente
-- ❌ **NON** LLM per valutazione impatto e suggerimenti
+- ✅ **LLM CodeGeeX** via Ollama (open-source, locale)
+- ✅ **Ragionamento semantico** su codice complesso
+- ✅ **Analisi impatto** e vulnerabilità contestuali
+- ✅ **Suggerimenti intelligenti** oltre le regole statiche
 
-**Per diventare un vero "AI Auditor" serve aggiungere LLM integration** (OpenAI GPT/Claude/etc.) per analisi intelligente del codice e contesto.
+**Sistema Ibrido**: Pattern matching veloce → AI profonda per casi complessi.
 
 ## 🏗️ Architettura
 
@@ -76,6 +75,19 @@ hcom
 
 # Configura hooks per Claude Code
 # (segui istruzioni in docs/quick_start.md)
+```
+
+### 1.5 Setup Ollama per AI Analysis (Opzionale)
+```bash
+# Se hai Ollama/CodeGeeX sul NAS, configura:
+# Modifica config/agent_config.yaml:
+ai:
+  enable_ai: true
+  ollama_url: "http://TUO_NAS_IP:11434"  # IP del tuo container Ollama
+  ollama_model: "codegeex"
+
+# Test connessione AI
+python test_ai_integration.py
 ```
 
 ### 2. Avvia l'Auditor

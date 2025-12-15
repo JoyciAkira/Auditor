@@ -1,6 +1,6 @@
 """
 Motore di auditing principale.
-Integra funzionalità di analisi da AI-Github-Auditor con regole custom.
+Sistema ibrido: pattern matching veloce + AI analysis profonda.
 """
 
 import re
@@ -9,6 +9,7 @@ import yaml
 from typing import Dict, List, Optional, Any
 from pathlib import Path
 from dataclasses import dataclass
+from .ai_analyzer import AIAnalyzer
 
 
 @dataclass
@@ -44,12 +45,26 @@ class AuditorEngine:
         self.rules = self._load_rules()
         self.active = False
 
+        # AI Analyzer (opzionale)
+        self.ai_analyzer = None
+        if hasattr(config, 'enable_ai') and config.enable_ai:
+            try:
+                ollama_url = getattr(config, 'ollama_url', 'http://localhost:11434')
+                ollama_model = getattr(config, 'ollama_model', 'codegeex')
+                self.ai_analyzer = AIAnalyzer(ollama_url, ollama_model)
+                print(f"🤖 AI Analyzer inizializzato: {ollama_model} @ {ollama_url}")
+            except Exception as e:
+                print(f"⚠️  AI Analyzer non disponibile: {e}")
+                self.ai_analyzer = None
+
         # Statistiche
         self.stats = {
             'events_processed': 0,
             'issues_found': 0,
             'warnings_sent': 0,
-            'blocks_applied': 0
+            'blocks_applied': 0,
+            'ai_analyses': 0,
+            'pattern_matches': 0
         }
 
     def start(self):
@@ -70,6 +85,25 @@ class AuditorEngine:
 
         self.stats['events_processed'] += 1
 
+        # Prima: Pattern matching veloce
+        pattern_result = self._analyze_with_patterns(event)
+        if pattern_result:
+            self.stats['pattern_matches'] += 1
+            self.update_stats(pattern_result)
+            return pattern_result
+
+        # Secondo: AI analysis se disponibile e evento merita attenzione
+        if self.ai_analyzer and self._should_use_ai(event):
+            ai_result = self.ai_analyzer.analyze_event(event)
+            if ai_result:
+                self.stats['ai_analyses'] += 1
+                self.update_stats(ai_result)
+                return ai_result
+
+        return None
+
+    def _analyze_with_patterns(self, event: Dict) -> Optional[AuditResult]:
+        """Analisi veloce con pattern matching."""
         event_type = event.get('type', '')
 
         # Routing basato sul tipo di evento
@@ -85,11 +119,43 @@ class AuditorEngine:
             # Analisi generica
             result = self._analyze_generic_event(event)
 
-        # Stats: l'engine mantiene coerenza interna (evita che caller debba ricordarselo).
-        if result:
-            self.update_stats(result)
-
         return result
+
+    def _should_use_ai(self, event: Dict) -> bool:
+        """Determina se un evento merita analisi AI."""
+        event_type = event.get('type', '')
+
+        if event_type == 'tool':
+            tool_name = event.get('tool_name', '')
+            if tool_name in ['Bash', 'FileEdit', 'RunTerminalCmd']:
+                # Controlla contenuto per complessità
+                tool_input = event.get('tool_input', {})
+                if tool_name == 'FileEdit':
+                    code = tool_input.get('new_string', '')
+                    # Usa AI per codice complesso
+                    return len(code) > 100 or self._contains_complex_patterns(code)
+                elif tool_name == 'Bash':
+                    command = tool_input.get('command', '')
+                    # Usa AI per comandi complessi
+                    return len(command) > 50 or '|' in command or '&&' in command
+                elif tool_name == 'RunTerminalCmd':
+                    return True  # Sempre usa AI per comandi terminal
+
+        elif event_type == 'status':
+            status_detail = event.get('status_detail', '')
+            return 'commit' in status_detail.lower()  # Analizza commit con AI
+
+        return False
+
+    def _contains_complex_patterns(self, code: str) -> bool:
+        """Controlla se codice contiene pattern complessi che meritano AI analysis."""
+        complex_patterns = [
+            'import ', 'def ', 'class ', 'try:', 'except:',
+            'sql', 'query', 'execute', 'connect',
+            'password', 'secret', 'key', 'token',
+            'eval(', 'exec(', 'subprocess', 'os.system'
+        ]
+        return any(pattern in code.lower() for pattern in complex_patterns)
 
     def _analyze_tool_event(self, event: Dict) -> Optional[AuditResult]:
         """Analizza un evento tool (es. Bash, FileEdit)."""

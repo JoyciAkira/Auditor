@@ -44,3 +44,11 @@ integrations:
   openai_api_key: null               # API key OpenAI per analisi avanzate
   slack_webhook: null                # Webhook Slack per notifiche
   discord_webhook: null              # Webhook Discord per notifiche
+
+# AI Analysis (opzionale - usa Ollama/CodeGeeX)
+ai:
+  enable_ai: false                   # Abilita analisi con LLM reale
+  ollama_url: "http://localhost:11434"  # URL Ollama (modifica per NAS)
+  ollama_model: "codegeex"           # Modello LLM da usare
+  ai_timeout: 30                     # Timeout per chiamate AI (secondi)
+  ai_temperature: 0.1                # Temperature per risposte AI (0.0-1.0)
